@@ -68,10 +68,10 @@ class Scraper:
         scraped_restaurant_details = self.get_restaurant_details()
         restaurants = self.map_scraped_restaurant_details(scraped_restaurant_details)
         restaurant_to_order_from = self.pick_random_restaurant(restaurants)
+        order = self.create_order(restaurant_to_order_from)
 
     def get_restaurant_details(self):
-        search_url = "http://www.thuisbezorgd.nl/eten-bestellen-krimpen-aan-den-ijssel-2925"
-        soup = BeautifulSoup(requests.get(search_url).text, 'html.parser')
+        soup = BeautifulSoup(requests.get("http://www.thuisbezorgd.nl/eten-bestellen-krimpen-aan-den-ijssel-2925").text, 'html.parser')
         return soup.findAll("div", {"class": "detailswrapper"})
 
     def map_scraped_restaurant_details(self, scraped_restaurant_details):
@@ -127,6 +127,41 @@ class Scraper:
                 print(picked_restaurant.name)
                 return picked_restaurant
 
+    def create_order(self, restaurant_to_order_from):
+        meals = []
+        soup = BeautifulSoup(requests.get(restaurant_to_order_from.url).text, 'html.parser')
+        all_meals = soup.findAll("div", {"class": "meal"})
+        print(all_meals)
+        for meal in all_meals:
+            print(meal)
+            _meal = Meal()
+            _meal.name = " ".join(meal.find("span", class_="meal-name").text.split())
+            _meal.price = self.amount_in_euros_to_float(meal.find("div", class_="meal__price").text)
+            meals.append(_meal)
+
+        dishes = self.add_random_dishes_to_order(meals, [])
+        for dish in dishes:
+            print(dish.name + " " + str(dish.price))
+
+    def add_random_dishes_to_order(self, meals, order_contents):
+        _len = len(meals)
+        user_cash = self._user_cash
+        if len(meals) == 0:
+            return order_contents
+        else:
+            random_number = random.randint(0, len(meals) - 1)
+            random_meal = meals[random_number]
+            if random_meal.price > user_cash:
+                meals.remove(random_meal)
+                self.add_random_dishes_to_order(meals, order_contents)
+            else:
+                self._user_cash -= random_meal.price
+                order_contents.append(random_meal)
+                self.add_random_dishes_to_order(meals, order_contents)
+
+
+
+
 
 
 
@@ -169,6 +204,27 @@ class Restaurant:
     def minimum_order_amount(self, minimum_order_amount):
         self._minimum_order_amount = minimum_order_amount
 
+
+class Meal:
+    def __init__(self):
+        self._name=None
+        self._price=None
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, price):
+        self._price = price
 
 main = Main()
 main.start()
