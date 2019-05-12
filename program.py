@@ -1,7 +1,7 @@
 #!/usr/bin/evn python3
 
 # Script to order food from thuisbezorgd.nl
-# Todo: Recursion doesn't update variables
+# TODO: Checken op geopend en gesloten
 
 import requests
 import re
@@ -28,17 +28,17 @@ class Main:
             self._postal_code=postal_code
             self._user_cash=user_cash
         else:
-            self.ask_for_user_information()
+            return self.ask_for_user_information()
 
 
     def get_postal_code_input(self):
         postal_code = input("Please enter your postal address without any spaces. For example: 3011XR\n")
         if len(postal_code) < 6 :
             print("Postal code too short")
-            self.get_postal_code_input()
+            return self.get_postal_code_input()
         elif len(postal_code) > 6 :
             print("Postal code too long")
-            self.get_postal_code_input()
+            return self.get_postal_code_input()
         self.check_postal_code_regex(postal_code)
         return postal_code
 
@@ -46,7 +46,7 @@ class Main:
         regex = "\d{4}?[A-Z]{2}"
         if not re.search(regex, postal_code):
             print("Postal code invalid")
-            self.get_postal_code_input()
+            return self.get_postal_code_input()
         return True
 
     def get_cash_amount_input(self):
@@ -55,7 +55,7 @@ class Main:
             return float(amount)
         except ValueError:
             print("Try again")
-            self.get_cash_amount_input()
+            return self.get_cash_amount_input()
 
 class Scraper:
     url = "http://www.thuisbezorgd.nl"
@@ -122,7 +122,7 @@ class Scraper:
             picked_restaurant = restaurants[random_number]
             if (picked_restaurant.delivery_costs + picked_restaurant.minimum_order_amount) > user_cash:
                 restaurants.remove(picked_restaurant)
-                self.pick_random_restaurant(restaurants)
+                return self.pick_random_restaurant(restaurants)
             else:
                 print(picked_restaurant.name)
                 return picked_restaurant
@@ -139,25 +139,24 @@ class Scraper:
             _meal.price = self.amount_in_euros_to_float(meal.find("div", class_="meal__price").text)
             meals.append(_meal)
 
-        dishes = self.add_random_dishes_to_order(meals, [])
+        dishes = self.add_random_dishes_to_order(meals[:], [])
         for dish in dishes:
             print(dish.name + " " + str(dish.price))
 
-    def add_random_dishes_to_order(self, meals, order_contents):
-        _len = len(meals)
+    def add_random_dishes_to_order(self, _meals, order_contents):
         user_cash = self._user_cash
-        if len(meals) == 0:
-            return order_contents
+        if len(_meals) == 0:
+            return order_contents[:]
         else:
-            random_number = random.randint(0, len(meals) - 1)
-            random_meal = meals[random_number]
+            random_number = random.randint(0, len(_meals) - 1)
+            random_meal = _meals[random_number]
             if random_meal.price > user_cash:
-                meals.remove(random_meal)
-                self.add_random_dishes_to_order(meals, order_contents)
+                _meals.remove(random_meal)
+                return self.add_random_dishes_to_order(_meals, order_contents)
             else:
                 self._user_cash -= random_meal.price
                 order_contents.append(random_meal)
-                self.add_random_dishes_to_order(meals, order_contents)
+                return self.add_random_dishes_to_order(_meals, order_contents)
 
 
 
