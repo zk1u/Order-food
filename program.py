@@ -9,17 +9,18 @@ import time
 import yaml
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
 
 from bs4 import BeautifulSoup
+
+print("Reading config.yaml..")
 
 with open("config.yaml", 'r') as ymlfile:
     try:
         cfg = yaml.safe_load(ymlfile)
     except yaml.YAMLError as exception:
         print(exception)
-
-for section in cfg:
-    print(section)
+        sys.exit()
 
 def format_string(string):
 
@@ -30,10 +31,12 @@ def format_string(string):
     string = string.replace("\n", "")
     return string
 
-postal_code =  "2925BC"
+print("Creating random order..")
+
+postal_code =  cfg['address']['postalcode']
 base_url = "http://www.thuisbezorgd.nl/"
 order_url = "http://www.thuisbezorgd.nl/eten-bestellen-krimpen-aan-den-ijssel-2925"
-cash = 20.0
+cash = cfg['cash']
 
 soup = BeautifulSoup(requests.get(order_url).text, 'html.parser')
 restaurants = []
@@ -97,9 +100,6 @@ for order in orders[:]:
         continue
     cash -= float(order[1])
 
-for order in orders:
-    print(order)
-
 print("Random order created.. Sending it to browser")
 
 driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
@@ -129,8 +129,19 @@ for order in orders:
 driver.find_element_by_id("btn-basket").click()
 time.sleep(1)
 driver.find_element_by_class_name("cartbutton-button").click()
-print("Done!")
+driver.find_element_by_name("address").send_keys(cfg['address']['streetname'] + ' ' + str(cfg['address']['housenumber']))
+driver.find_element_by_name("postcode").clear()  # clear prefilled postalcode
+driver.find_element_by_name("postcode").send_keys(cfg['address']['postalcode'])
+driver.find_element_by_name("surname").send_keys(cfg['userdetails']['name'])
+driver.find_element_by_name("email").send_keys(cfg['userdetails']['mail'])
+driver.find_element_by_name("phonenumber").send_keys(cfg['userdetails']['phonenumber'])
+driver.find_element_by_class_name("paymentmethod3").click()
+time.sleep(1)
+select = Select(driver.find_element_by_id('iidealbank'))
+select.select_by_visible_text('Rabobank')
+driver.find_element_by_class_name("checkout-orderbutton-btn").click()
 
+print("Done! Pay on the payment page")
 
 
 

@@ -1,3 +1,4 @@
+cash:  #has to be a float!
 address:
   streetname:
   housenumber:
