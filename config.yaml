@@ -1,0 +1,13 @@
+address:
+  streetname:
+  housenumber:
+  postalcode:
+  city:
+
+userdetails:
+  name:
+  mail:
+  phonenumber:
+
+paymentmethod:
+

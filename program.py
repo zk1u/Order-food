@@ -6,11 +6,20 @@ import random
 import sys
 import os
 import time
+import yaml
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 from bs4 import BeautifulSoup
 
+with open("config.yaml", 'r') as ymlfile:
+    try:
+        cfg = yaml.safe_load(ymlfile)
+    except yaml.YAMLError as exception:
+        print(exception)
+
+for section in cfg:
+    print(section)
 
 def format_string(string):
 
@@ -121,6 +130,8 @@ driver.find_element_by_id("btn-basket").click()
 time.sleep(1)
 driver.find_element_by_class_name("cartbutton-button").click()
 print("Done!")
+
+
 
 
 
