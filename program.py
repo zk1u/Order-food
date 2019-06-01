@@ -63,6 +63,10 @@ if len(restaurants) == 0:
     sys.exit()
 
 restaurant_to_order_from = restaurants[random.randint(0, len(restaurants) - 1)]
+
+if restaurant_to_order_from.find("div", class_="delivery-cost").text != 'GRATIS':
+    cash -= float(format_string(restaurant_to_order_from.find("div", class_="delivery-cost").text))
+
 restaurant_url = base_url + restaurant_to_order_from.a['href']
 
 restaurant_web_page = BeautifulSoup(requests.get(restaurant_url).text, 'html.parser')
@@ -84,6 +88,9 @@ for order in orders[:]:
         continue
     cash -= float(order[1])
 
+for order in orders:
+    print(order)
+
 print("Random order created.. Sending it to browser")
 
 driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
@@ -92,9 +99,31 @@ driver.get(restaurant_url)
 driver.find_element_by_id("privacybanner").click()
 time.sleep(1)
 driver.find_element_by_id(orders[0][0]).click()
-element = driver.find_element_by_name('mysearchstring_popupmode')
+time.sleep(1)
+element = driver.find_element_by_name("mysearchstring_popupmode")
 element.send_keys(postal_code)
-element.submit()
+element.send_keys(Keys.ENTER)
+time.sleep(1)
+
+for order in orders:
+    driver.execute_script("window.scrollTo(0, document.documentElement.clientHeight - 20)")
+    driver.find_element_by_id(order[0]).click()
+    try:
+        time.sleep(1)
+        driver.find_element_by_name("productnumber")
+    except:
+        continue
+    time.sleep(2)
+    driver.find_element_by_class_name("cartbutton-button").click()
+    time.sleep(1)
+
+driver.find_element_by_id("btn-basket").click()
+time.sleep(1)
+driver.find_element_by_class_name("cartbutton-button").click()
+print("Done!")
+
+
+
 
 
 
