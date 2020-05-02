@@ -1,0 +1,8 @@
+body {
+    font-family: 'Space Mono', monospace;  
+}
+
+.title {
+    font-size:100px;
+    font-weight: bold;
+}

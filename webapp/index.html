@@ -1,0 +1,27 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="styling.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono&display=swap" rel="stylesheet">
+</head>
+<span class="title">Order food</span>
+<form name="userData" onsubmit="return callApi()">  
+  <label>Name</label><input type="text" name="name"><br>
+  <label>Email</label><input type="text" name="email"><br>
+  <label>Phone number</label><input type="text" name="phonenumber"><br>
+  <label>Postal code</label><input type="text" name="postalcode"><br>
+  <label>City</label><input type="text" name="city"><br>
+  <label>Street</label><input type="text" name="street"><br>
+  <label>€</label><input type="text" name="amount"><br>
+  <input type="submit">
+</form>
+
+<script>
+    function callApi() {
+        fetch('localhost:5000/order')
+            .then(response => response.json())
+            .then(data => console.log(data));
+    }
+    
+    function validateInput() {
+        //alert(document.forms["userData"]["street"].value);
+    }
+</script>

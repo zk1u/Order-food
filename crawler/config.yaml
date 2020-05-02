@@ -1,0 +1,14 @@
+cash: 20.0  #has to be a float!
+address:
+  streetname: Allegro
+  housenumber: 133
+  postalcode: 2925 BC
+  city: Krimpen aan den IJssel
+
+userdetails:
+  name: Joost
+  mail: joostderuijter@protonmail.com
+  phonenumber: 0624123782
+
+bank:
+
