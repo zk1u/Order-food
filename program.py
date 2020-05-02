@@ -1,4 +1,4 @@
-#!/usr/bin/evn python3
+#!/usr/bin/env python3
 
 import requests
 import re
@@ -9,6 +9,7 @@ import time
 import yaml
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 
 from bs4 import BeautifulSoup
@@ -81,10 +82,15 @@ if restaurant_to_order_from.find("div", class_="delivery-cost").text != 'GRATIS'
 
 restaurant_url = base_url + restaurant_to_order_from.a['href']
 
+print(restaurant_url)
+time.sleep(10)
+
 restaurant_web_page = BeautifulSoup(requests.get(restaurant_url).text, 'html.parser')
 
-for div in restaurant_web_page.findAll("div", {"class":"meal"}):
+for div in restaurant_web_page.findAll("div", {"class":"meal-container"}):
     dishes.append(div)
+
+#print(dishes)
 
 for dish in dishes:
     order.append(dish.get("id"))
@@ -102,32 +108,40 @@ for order in orders[:]:
 
 print("Random order created.. Sending it to browser")
 
-driver = webdriver.Chrome(os.getcwd() + "/chromedriver")
+chrome_options = Options()  
+#chrome_options.add_argument("--headless")  
+
+driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=os.getcwd() + "/chromedriver")
 driver.get(order_url)
 driver.get(restaurant_url)
-driver.find_element_by_id("privacybanner").click()
-time.sleep(1)
+cookiebanner_ok_button = driver.find_element_by_class_name("cc-banner__btn-ok")
+if cookiebanner_ok_button is not None:
+    cookiebanner_ok_button.click()
+# driver.find_element_by_id("privacybanner").click()
+# time.sleep(1)
+print(orders)
 driver.find_element_by_id(orders[0][0]).click()
 time.sleep(1)
-element = driver.find_element_by_name("mysearchstring_popupmode")
+element = driver.find_element_by_name("mysearchstring")
 element.send_keys(postal_code)
 element.send_keys(Keys.ENTER)
-time.sleep(1)
+time.sleep(5)
 
 for order in orders:
     driver.execute_script("window.scrollTo(0, document.documentElement.clientHeight - 20)")
+    time.sleep(2)
     driver.find_element_by_id(order[0]).click()
     try:
         time.sleep(1)
         driver.find_element_by_name("productnumber")
     except:
+        print("error:")
+        print(order)
         continue
     time.sleep(2)
     driver.find_element_by_class_name("cartbutton-button").click()
     time.sleep(1)
 
-driver.find_element_by_id("btn-basket").click()
-time.sleep(1)
 driver.find_element_by_class_name("cartbutton-button").click()
 driver.find_element_by_name("address").send_keys(cfg['address']['streetname'] + ' ' + str(cfg['address']['housenumber']))
 driver.find_element_by_name("postcode").clear()  # clear prefilled postalcode
@@ -135,12 +149,16 @@ driver.find_element_by_name("postcode").send_keys(cfg['address']['postalcode'])
 driver.find_element_by_name("surname").send_keys(cfg['userdetails']['name'])
 driver.find_element_by_name("email").send_keys(cfg['userdetails']['mail'])
 driver.find_element_by_name("phonenumber").send_keys(cfg['userdetails']['phonenumber'])
+
+select = Select(driver.find_element_by_name('deliverytime'))
+select.select_by_index(1);
+
 driver.find_element_by_class_name("paymentmethod3").click()
 time.sleep(1)
 select = Select(driver.find_element_by_id('iidealbank'))
 select.select_by_visible_text('Rabobank')
 driver.find_element_by_class_name("checkout-orderbutton-btn").click()
-
+print(driver.current_url)
 print("Done! Pay on the payment page")
 
 
