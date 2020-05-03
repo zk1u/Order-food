@@ -130,10 +130,19 @@ def order():
     for order in orders:
         driver.execute_script("window.scrollTo(0, document.documentElement.clientHeight - 20)")
         time.sleep(2)
-        driver.find_element_by_id(order[0]).click()
+        meal_div = driver.find_element_by_id(order[0])
+        try: 
+            meal_div.find_element_by_class_name("sidedish-content")
+            print("This meal does not contain any sidedishes")
+            time.sleep(5)
+            meal_div.click()
+        except:
+            print("This meal contains side dishes")
+            time.sleep(5)
+            meal_div.click()
+            time.sleep(1)
+            meal_div.find_element_by_class_name("cartbutton-button").click()
         time.sleep(2)
-        driver.find_element_by_class_name("cartbutton-button").click()
-        time.sleep(1)
 
     driver.find_element_by_class_name("cartbutton-button").click()
     driver.find_element_by_name("address").send_keys(cfg['address']['streetname'] + ' ' + str(cfg['address']['housenumber']))

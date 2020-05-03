@@ -1,9 +1,11 @@
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="styling.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <span class="title">Order food</span>
-<form name="userData" onsubmit="return callApi()">  
+<form id = "userDataForm" name="userData" onsubmit="return callApi()">  
   <label>Name</label><input type="text" name="name"><br>
   <label>Email</label><input type="text" name="email"><br>
   <label>Phone number</label><input type="text" name="phonenumber"><br>
@@ -11,16 +13,27 @@
   <label>City</label><input type="text" name="city"><br>
   <label>Street</label><input type="text" name="street"><br>
   <label>€</label><input type="text" name="amount"><br>
-  <input type="submit">
+  <input id="submit-btn" type="submit">
 </form>
 
+<i id="spinner" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+
 <script>
+    $("#userDataForm").submit(function(e) {
+        e.preventDefault(); //prevent page reload on form submit
+    });
+
     function callApi() {
-        fetch('localhost:5000/order')
-            .then(response => response.json())
-            .then(data => console.log(data));
+        $("#submit-btn").attr("disabled", true);
+        $("#spinner").css('visibility','visible');
+        $.post( "http://localhost:5000/order", { name: "John", time: "2pm" })
+        .done(function( data ) {
+            $("#submit-btn").removeAttr("disabled");
+            $("#spinner").css('visibility','visible');
+            alert(data);
+        });
     }
-    
+
     function validateInput() {
         //alert(document.forms["userData"]["street"].value);
     }

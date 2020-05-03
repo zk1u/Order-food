@@ -6,9 +6,9 @@ app.config["DEBUG"] = True
 
 @app.route('/order', methods=['POST'])
 def home():
-    try: 
+    #try: 
         return order()
-    except: 
-        return home()
+    #except: 
+     #   return home()
 
 app.run()
